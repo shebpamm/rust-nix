@@ -38,7 +38,7 @@
           packages.default = {{ project-name }};
           devShells.default = workspaceShell;
           apps = {
-            default = { type = "app"; program = "${ pkgs.lib.getExe {{ project-name }} }"; };
+            default = { type = "app"; program = "${ pkgs.lib.getExe' {{ project-name }} "{{ project-name }}" }"; };
             bootstrap = { type = "app"; program = (pkgs.writeShellScriptBin "bootstrap" ''
               ${p.cargo}/bin/cargo generate-lockfile
               ${inputs.cargo2nix.packages.${system}.cargo2nix}/bin/cargo2nix
