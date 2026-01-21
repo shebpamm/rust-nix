@@ -24,7 +24,7 @@
               overlays = [ inputs.cargo2nix.overlays.default ];
             };
           rustPkgs = p.rustBuilder.makePackageSet {
-            rustVersion = "1.71.0";
+            rustVersion = "1.83.0";
             packageFun = import ./Cargo.nix;
           };
 
