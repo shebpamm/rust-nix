@@ -12,17 +12,23 @@
     nixpkgs.follows = "cargo2nix/nixpkgs";
   };
 
-  outputs = inputs@{ flake-parts, ... }:
+  outputs =
+    inputs@{ flake-parts, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       imports = [ ];
-      systems = [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" "x86_64-darwin" ];
-      perSystem = { config, self', inputs', pkgs, system, ... }:
+      systems = [
+        "x86_64-linux"
+        "aarch64-linux"
+        "aarch64-darwin"
+        "x86_64-darwin"
+      ];
+      perSystem =
+        { pkgs, system, ... }:
         let
-          p = import inputs.nixpkgs
-            {
-              inherit system;
-              overlays = [ inputs.cargo2nix.overlays.default ];
-            };
+          p = import inputs.nixpkgs {
+            inherit system;
+            overlays = [ inputs.cargo2nix.overlays.default ];
+          };
           rustPkgs = p.rustBuilder.makePackageSet {
             rustVersion = "1.83.0";
             packageFun = import ./Cargo.nix;
@@ -32,18 +38,26 @@
             packages = [ inputs.cargo2nix.packages.${system}.cargo2nix ];
           };
 
-        {{ project-name }} = rustPkgs.workspace.{{ project-name }} {};
+          {{ project-name }} = rustPkgs.workspace.{{ project-name }} { };
         in
         {
           packages.default = {{ project-name }};
           devShells.default = workspaceShell;
           apps = {
-            default = { type = "app"; program = "${ pkgs.lib.getExe' {{ project-name }} "{{ project-name }}" }"; };
-            bootstrap = { type = "app"; program = (pkgs.writeShellScriptBin "bootstrap" ''
-              ${p.cargo}/bin/cargo generate-lockfile
-              ${inputs.cargo2nix.packages.${system}.cargo2nix}/bin/cargo2nix
-              ${pkgs.git}/bin/git add Cargo.nix Cargo.lock
-            ''); };
+            default = {
+              type = "app";
+              program = "${pkgs.lib.getExe' {{ project-name }} "{{ project-name }}"}";
+            };
+            bootstrap = {
+              type = "app";
+              program = (
+                pkgs.writeShellScriptBin "bootstrap" ''
+                  ${p.cargo}/bin/cargo generate-lockfile
+                  ${inputs.cargo2nix.packages.${system}.cargo2nix}/bin/cargo2nix
+                  ${pkgs.git}/bin/git add Cargo.nix Cargo.lock
+                ''
+              );
+            };
           };
         };
       flake = { };
